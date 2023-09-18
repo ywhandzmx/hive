@@ -46,15 +46,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.hive.service.rpc.thrift.TCLIService;
 import org.apache.hive.service.rpc.thrift.TSessionHandle;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HivePreparedStatement.
  *
  */
 public class HivePreparedStatement extends HiveStatement implements PreparedStatement {
+  private final static Logger logger = LoggerFactory.getLogger(HivePreparedStatement.class);
   private final String sql;
+  private final ArrayList<String> sqlList;
 
   /**
    * save the SQL parameters {paramLoc:paramValue}
@@ -65,6 +70,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
       TSessionHandle sessHandle, String sql) {
     super(connection, client, sessHandle);
     this.sql = sql;
+    this.sqlList = new ArrayList<>();
   }
 
   /*
@@ -75,9 +81,21 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
 
   public void addBatch() throws SQLException {
     // TODO Auto-generated method stub
-    throw new SQLFeatureNotSupportedException("Method not supported");
+    logger.info("current sql is {} --- parameters is {}",this.sql, ArrayUtils.toString(parameters));
+    this.sqlList.add(updateSql(sql, parameters));
   }
 
+
+  @Override
+  public int[] executeBatch() throws SQLException {
+    int[] reply = new int[sqlList.size()];
+    int i = 0;
+    for (String s : sqlList) {
+     reply[i++] = executeUpdate(s);
+    }
+    sqlList.clear();
+    return reply;
+  }
   /*
    * (non-Javadoc)
    *
@@ -117,6 +135,11 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    *
    * @see java.sql.PreparedStatement#executeUpdate()
    */
+
+  public int executeUpdate(String sql) throws SQLException {
+    super.executeUpdate(sql);
+    return 0;
+  }
 
   public int executeUpdate() throws SQLException {
     super.executeUpdate(updateSql(sql, parameters));
