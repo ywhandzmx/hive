@@ -80,8 +80,7 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
 
   public void addBatch() throws SQLException {
-    // TODO Auto-generated method stub
-    logger.info("current sql is {} --- parameters is {}",this.sql, ArrayUtils.toString(parameters));
+//    logger.debug("current sql is {} --- parameters is {}",this.sql, ArrayUtils.toString(parameters));
     this.sqlList.add(updateSql(sql, parameters));
   }
 
